@@ -22,16 +22,18 @@
   --font-sans: var(--font-geist-sans), var(--font-arabic), ui-sans-serif, system-ui, sans-serif;
 }
 
+/*
+ * The browser WINDOW is the only scroll container: no overflow, gutter, fixed
+ * width or 100vw tricks on <html>/<body>. Both simply fill the window and
+ * carry the dark page colour, so there's never a strip of browser-default
+ * background — at any width, zoom level or Windows display scaling.
+ */
 html {
-  color-scheme: dark;
-  /* The page colour on <html> too, so it's the same everywhere — also when
-     you scroll past the end or the page is shorter than the window. */
+  color-scheme: dark; /* dark scrollbars and form controls */
   background: var(--color-bg);
-  /* Dark scrollbar (Windows shows a light one otherwise), always present on
-     desktop so the layout doesn't jump between short and long pages.
-     (Phones use overlay scrollbars, so nothing changes there.) */
+  min-height: 100%;
+  /* Dark scrollbar colours (Windows otherwise shows a light grey one). */
   scrollbar-color: var(--color-line) var(--color-bg);
-  overflow-y: scroll;
 }
 
 /* Cut-out clothing photos: a soft shadow so dark and light items both stand out. */
@@ -40,6 +42,8 @@ html {
 }
 
 body {
+  margin: 0;
+  min-height: 100dvh; /* at least one full window tall */
   background: var(--color-bg);
   color: var(--color-fg);
 }
