@@ -1,0 +1,183 @@
+"use client";
+
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+import { categories, type CategoryId } from "@/config/dolab.config";
+import type { BodyProfile } from "@/lib/body/profile";
+import { sizeHint } from "@/lib/body/sizing";
+import { format } from "@/lib/i18n/format";
+import { renderTryOn, type TryOnResult } from "@/lib/try-on";
+import { useI18n } from "@/lib/i18n/I18nProvider";
+import { plural } from "@/lib/i18n/plural";
+import { formatPrice } from "@/lib/helpers/format";
+import { buttonClasses } from "@/components/ui/Button";
+import { GhostMannequin } from "./GhostMannequin";
+import { OutfitBoard } from "./OutfitBoard";
+import { CutoutImage } from "./CutoutImage";
+import { FlatGarment } from "./FlatGarment";
+import type { FittingRoomItem } from "./types";
+
+type View = "board" | "mannequin";
+type Selection = Partial<Record<CategoryId, string>>; // category → item id
+
+type FittingRoomProps = {
+  body: BodyProfile;
+  items: FittingRoomItem[];
+  initialSelection: Selection;
+  /** false until the user has filled in the avatar page (then sizes are guesses from defaults). */
+  hasProfile: boolean;
+};
+
+export function FittingRoom({ body, items, initialSelection, hasProfile }: FittingRoomProps) {
+  const { t, locale } = useI18n();
+  const [view, setView] = useState<View>("board") // the outfit board is the main view;
+  const [selection, setSelection] = useState<Selection>(initialSelection);
+  const [result, setResult] = useState<TryOnResult | null>(null);
+
+  const byCategory = useMemo(() => {
+    const groups = new Map<CategoryId, FittingRoomItem[]>();
+    for (const item of items) groups.set(item.category, [...(groups.get(item.category) ?? []), item]);
+    return groups;
+  }, [items]);
+
+  const chosen = useMemo(
+    () => items.filter((item) => selection[item.category] === item.id),
+    [items, selection],
+  );
+
+  // Ask the try-on renderer for a new picture whenever the outfit changes.
+  // It's async (a future AI service takes a few seconds), so ignore answers
+  // that arrive after the outfit has changed again.
+  useEffect(() => {
+    let live = true;
+    renderTryOn({ body, items: chosen }).then((next) => live && setResult(next));
+    return () => {
+      live = false;
+    };
+  }, [body, chosen]);
+
+  const toggle = (category: CategoryId, id: string | null) =>
+    setSelection((current) => ({ ...current, [category]: id ?? undefined }));
+
+  const notOwned = chosen.filter((item) => item.status === "not_owned");
+  const notOwnedTotal = notOwned.reduce((sum, item) => sum + (item.price ?? 0), 0);
+
+  return (
+    <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] md:items-start">
+      {/* ---- the stage ---- */}
+      <section className="flex flex-col gap-3 md:sticky md:top-20">
+        <div role="tablist" aria-label={t.fittingRoom.viewLabel} className="grid grid-cols-2 rounded-xl border border-line bg-surface p-1">
+          {(["board", "mannequin"] as const).map((v) => (
+            <button
+              key={v}
+              role="tab"
+              type="button"
+              aria-selected={view === v}
+              onClick={() => setView(v)}
+              className={`rounded-lg py-2 text-sm font-medium transition ${view === v ? "bg-accent text-on-accent" : "text-muted hover:text-fg"}`}
+            >
+              {v === "mannequin" ? t.fittingRoom.viewMannequin : t.fittingRoom.viewBoard}
+            </button>
+          ))}
+        </div>
+
+        {view === "mannequin" ? (
+          <div className="relative flex aspect-4/5 justify-center overflow-hidden rounded-3xl border border-line bg-[radial-gradient(ellipse_at_50%_35%,#262b34_0%,#14171c_75%)] py-4">
+            {result?.kind === "image" ? (
+              <img src={result.imageUrl} alt={t.fittingRoom.mannequinAlt} className="h-full w-auto object-contain" />
+            ) : (
+              <GhostMannequin
+                body={body}
+                layers={result?.kind === "layers" ? result.layers : []}
+                canvasHeight={result?.kind === "layers" ? result.canvasHeight : undefined}
+                className="h-full w-auto"
+                title={t.fittingRoom.mannequinAlt}
+              />
+            )}
+          </div>
+        ) : chosen.length > 0 ? (
+          <OutfitBoard items={chosen} />
+        ) : (
+          <p className="grid aspect-4/5 place-items-center rounded-3xl border border-dashed border-line p-8 text-center text-muted">
+            {t.fittingRoom.boardEmpty}
+          </p>
+        )}
+
+        {notOwned.length > 0 && (
+          <p className="rounded-xl border border-accent/40 bg-accent/10 px-4 py-2.5 text-sm">
+            {plural(t.fittingRoom.notOwnedSummary, notOwned.length, locale)}
+            {notOwnedTotal > 0 && <strong className="ms-1 text-accent">{formatPrice(notOwnedTotal, locale)}</strong>}
+            {hasProfile && (
+              <span className="mt-1 block text-xs text-muted">
+                {format(t.fittingRoom.sizeHint, { top: sizeHint(body).top, bottom: sizeHint(body).bottom })}
+              </span>
+            )}
+          </p>
+        )}
+      </section>
+
+      {/* ---- the item pickers ---- */}
+      <section className="flex flex-col gap-5" aria-label={t.fittingRoom.pickItems}>
+        {categories.map(({ id: category }) => {
+          const options = byCategory.get(category) ?? [];
+          return (
+            <fieldset key={category} className="flex flex-col gap-2">
+              <legend className="mb-2 flex w-full items-center justify-between text-sm font-medium">
+                <span>{t.categories[category]}</span>
+              </legend>
+              {options.length === 0 ? (
+                <p className="text-xs text-muted">
+                  {t.fittingRoom.noItemsInCategory}{" "}
+                  <Link href="/wardrobe/new" className="text-accent hover:underline">
+                    {t.wardrobe.addItem}
+                  </Link>
+                </p>
+              ) : (
+                <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+                  <PickerTile selected={!selection[category]} label={t.fittingRoom.none} onClick={() => toggle(category, null)}>
+                    <span className="text-xs text-[#6b6660]">{t.fittingRoom.none}</span>
+                  </PickerTile>
+                  {options.map((item) => (
+                    <PickerTile key={item.id} selected={selection[category] === item.id} label={item.name} onClick={() => toggle(category, selection[category] === item.id ? null : item.id)}>
+                      <Thumb item={item} />
+                      {item.status === "not_owned" && (
+                        <span className="absolute inset-x-1 bottom-1 truncate rounded-full bg-accent px-1 text-center text-[9px] font-semibold text-on-accent">
+                          {t.wardrobe.notOwnedBadge}
+                        </span>
+                      )}
+                    </PickerTile>
+                  ))}
+                </div>
+              )}
+            </fieldset>
+          );
+        })}
+
+        <Link href="/fitting-room/avatar" className={buttonClasses("secondary", "self-start")}>
+          {t.fittingRoom.editAvatar}
+        </Link>
+      </section>
+    </div>
+  );
+}
+
+function PickerTile({ selected, label, onClick, children }: { selected: boolean; label: string; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={selected}
+      title={label}
+      aria-label={label}
+      className={`relative grid size-20 shrink-0 place-items-center overflow-hidden rounded-xl border-2 bg-photo transition ${selected ? "border-accent" : "border-transparent hover:border-line"}`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function Thumb({ item }: { item: FittingRoomItem }) {
+  if (item.cutoutUrl) return <CutoutImage url={item.cutoutUrl} alt="" className="photo-shadow size-full p-2" />;
+  if (item.photoUrl) return <img src={item.photoUrl} alt="" className="size-full object-cover" />;
+  return <FlatGarment category={item.category} colour={item.colour} className="photo-shadow size-full p-2" />;
+}

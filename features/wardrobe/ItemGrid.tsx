@@ -1,0 +1,16 @@
+import type { Locale } from "@/config/dolab.config";
+import type { ItemWithPhotos } from "@/types/database";
+import type { Dictionary } from "@/lib/i18n";
+import { ItemCard } from "./ItemCard";
+
+export function ItemGrid({ items, t, locale }: { items: ItemWithPhotos[]; t: Dictionary; locale: Locale }) {
+  return (
+    <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+      {items.map((item) => (
+        <li key={item.id}>
+          <ItemCard item={item} t={t} locale={locale} />
+        </li>
+      ))}
+    </ul>
+  );
+}

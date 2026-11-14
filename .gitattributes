@@ -1,0 +1,2 @@
+# Store text files with Unix (LF) line endings in the repo, on every OS.
+* text=auto eol=lf
