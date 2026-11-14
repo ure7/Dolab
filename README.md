@@ -1,6 +1,6 @@
 # Dolab | دولاب
 
-A personal wardrobe app for the family: catalogue your clothes, try outfits on a
+A personal wardrobe app : catalogue your clothes, try outfits on a
 mannequin, save looks, get outfit ideas and keep a shopping list — in English or Arabic.
 
 > 🚧 Work in progress. The full README (screenshots, deployment guide) arrives in phase 6.
