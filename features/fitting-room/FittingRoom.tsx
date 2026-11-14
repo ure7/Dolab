@@ -11,6 +11,7 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 import { plural } from "@/lib/i18n/plural";
 import { formatPrice } from "@/lib/helpers/format";
 import { buttonClasses } from "@/components/ui/Button";
+import { BagIcon } from "@/components/icons";
 import { GhostMannequin } from "./GhostMannequin";
 import { OutfitBoard } from "./OutfitBoard";
 import { CutoutImage } from "./CutoutImage";
@@ -63,9 +64,10 @@ export function FittingRoom({ body, items, initialSelection, hasProfile }: Fitti
   const notOwnedTotal = notOwned.reduce((sum, item) => sum + (item.price ?? 0), 0);
 
   return (
-    <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] md:items-start">
+    <div className="grid gap-[clamp(1.25rem,2.5vw,2.5rem)] md:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] md:items-start">
       {/* ---- the stage ---- */}
-      <section className="flex flex-col gap-3 md:sticky md:top-20">
+      {/* The stage is as wide as its column, but never taller than the window (4:5 board). */}
+      <section className="mx-auto flex w-full max-w-[min(100%,calc((100dvh-11rem)*0.8))] flex-col gap-3 md:sticky md:top-20">
         <div role="tablist" aria-label={t.fittingRoom.viewLabel} className="grid grid-cols-2 rounded-xl border border-line bg-surface p-1">
           {(["board", "mannequin"] as const).map((v) => (
             <button
@@ -141,8 +143,13 @@ export function FittingRoom({ body, items, initialSelection, hasProfile }: Fitti
                     <PickerTile key={item.id} selected={selection[category] === item.id} label={item.name} onClick={() => toggle(category, selection[category] === item.id ? null : item.id)}>
                       <Thumb item={item} />
                       {item.status === "not_owned" && (
-                        <span className="absolute inset-x-1 bottom-1 truncate rounded-full bg-accent px-1 text-center text-[9px] font-semibold text-on-accent">
-                          {t.wardrobe.notOwnedBadge}
+                        // A small shopping-bag badge: readable at any tile size.
+                        <span
+                          title={t.wardrobe.notOwnedBadge}
+                          className="absolute end-1 top-1 grid size-6 place-items-center rounded-full bg-accent text-on-accent shadow"
+                        >
+                          <BagIcon width={14} height={14} aria-hidden />
+                          <span className="sr-only">{t.wardrobe.notOwnedBadge}</span>
                         </span>
                       )}
                     </PickerTile>
@@ -169,7 +176,7 @@ function PickerTile({ selected, label, onClick, children }: { selected: boolean;
       aria-pressed={selected}
       title={label}
       aria-label={label}
-      className={`relative grid size-20 shrink-0 place-items-center overflow-hidden rounded-xl border-2 bg-photo transition ${selected ? "border-accent" : "border-transparent hover:border-line"}`}
+      className={`press relative grid size-[clamp(4.5rem,6vw,6rem)] shrink-0 place-items-center overflow-hidden rounded-xl border-2 bg-photo ${selected ? "border-accent" : "border-transparent hover:border-line"}`}
     >
       {children}
     </button>

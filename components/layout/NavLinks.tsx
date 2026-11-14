@@ -14,8 +14,9 @@ const listClasses: Record<Variant, string> = {
 };
 
 const linkClasses: Record<Variant, string> = {
-  top: "flex items-center gap-2 rounded-xl px-3 py-2 text-sm",
-  bottom: "flex flex-col items-center gap-1 py-2.5 text-[11px]",
+  top: "press flex min-h-10 items-center gap-2 rounded-xl px-3 py-2 text-sm",
+  // Phone tab bar: each tab is a big (56px tall, quarter-width) tap target.
+  bottom: "press flex min-h-14 flex-col items-center justify-center gap-1 py-2 text-[11px]",
 };
 
 // One component for both the desktop top bar and the mobile bottom tab bar,

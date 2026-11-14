@@ -7,7 +7,7 @@ import { SignOutButton } from "./SignOutButton";
 export function AppHeader() {
   return (
     <header className="sticky top-0 z-20 border-b border-line bg-bg/85 backdrop-blur">
-      <div className="mx-auto flex h-16 max-w-5xl items-center justify-between gap-4 px-4">
+      <div className="page-container flex h-16 items-center justify-between gap-3">
         <Logo />
         <nav aria-label="Main">
           <NavLinks variant="top" />

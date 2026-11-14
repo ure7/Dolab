@@ -12,7 +12,7 @@ export default async function NewItemPage({ searchParams }: NewItemPageProps) {
   const isStoreItem = status === "not_owned";
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
       <div>
         <PageTitle>{isStoreItem ? t.wardrobe.newStoreItemTitle : t.wardrobe.newItemTitle}</PageTitle>
         {isStoreItem && <p className="mt-2 max-w-2xl text-sm text-muted">{t.wardrobe.newStoreItemHint}</p>}

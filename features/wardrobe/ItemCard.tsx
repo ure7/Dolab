@@ -14,7 +14,7 @@ export function ItemCard({ item, t, locale }: ItemCardProps) {
   return (
     <Link
       href={`/wardrobe/${item.id}`}
-      className="group flex flex-col overflow-hidden rounded-2xl border border-line bg-surface transition hover:border-muted"
+      className="press group flex h-full flex-col overflow-hidden rounded-2xl border border-line bg-surface hover:-translate-y-0.5 hover:border-muted hover:shadow-xl hover:shadow-black/30 motion-reduce:hover:translate-y-0"
     >
       <div className="relative m-2 mb-0 aspect-square overflow-hidden rounded-xl bg-photo">
         <ItemImage item={item} />

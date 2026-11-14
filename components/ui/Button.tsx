@@ -13,7 +13,7 @@ const variantClasses: Record<Variant, string> = {
 export function buttonClasses(variant: Variant = "primary", extra = "") {
   return [
     "inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium",
-    "transition disabled:cursor-not-allowed disabled:opacity-50",
+    "press min-h-11 disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100",
     variantClasses[variant],
     extra,
   ].join(" ");

@@ -5,6 +5,11 @@
  * in app/layout.tsx). This block only gives them Tailwind names, e.g.
  * bg-surface, text-muted, border-line, bg-accent, text-on-accent.
  */
+/* Extra breakpoint for big monitors (1920px+), used for 6-column grids. */
+@theme {
+  --breakpoint-3xl: 120rem;
+}
+
 @theme inline {
   --color-bg: var(--dolab-background);
   --color-surface: var(--dolab-surface);
@@ -30,6 +35,10 @@
  */
 html {
   color-scheme: dark; /* dark scrollbars and form controls */
+  /* Fluid base size: 15px on small phones → 18px on big monitors. Tailwind
+     spacing and text sizes are in rem, so the whole UI scales with it. */
+  font-size: clamp(15px, 13.5px + 0.2vw, 18px);
+  -webkit-text-size-adjust: 100%;
   background: var(--color-bg);
   min-height: 100%;
   /* Dark scrollbar colours (Windows otherwise shows a light grey one). */
@@ -64,4 +73,29 @@ body {
 :focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
+}
+
+/*
+ * The page frame: full width on phones, growing up to 1440px on big screens,
+ * with side padding that scales smoothly (16px → 48px).
+ */
+@utility page-container {
+  width: 100%;
+  max-width: 90rem;
+  margin-inline: auto;
+  padding-inline: clamp(1rem, 3.5vw, 3rem);
+}
+
+/* Gentle press feedback for tappable things (skipped if the user prefers less motion). */
+@utility press {
+  transition: transform 150ms ease, box-shadow 200ms ease, border-color 150ms ease, background-color 150ms ease, color 150ms ease;
+  &:active {
+    transform: scale(0.98);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+    &:active {
+      transform: none;
+    }
+  }
 }

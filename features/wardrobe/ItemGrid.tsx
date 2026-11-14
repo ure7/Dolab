@@ -5,7 +5,7 @@ import { ItemCard } from "./ItemCard";
 
 export function ItemGrid({ items, t, locale }: { items: ItemWithPhotos[]; t: Dictionary; locale: Locale }) {
   return (
-    <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+    <ul className="grid grid-cols-2 gap-[clamp(0.75rem,1.2vw,1.25rem)] md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 3xl:grid-cols-6">
       {items.map((item) => (
         <li key={item.id}>
           <ItemCard item={item} t={t} locale={locale} />

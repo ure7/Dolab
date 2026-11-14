@@ -8,7 +8,7 @@ export default async function AvatarPage() {
   const [t, profile] = await Promise.all([getT(), getProfile()]);
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
       <div>
         <PageTitle>{t.avatar.title}</PageTitle>
         <p className="mt-1 text-sm text-muted">{t.avatar.subtitle}</p>
