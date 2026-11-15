@@ -8,8 +8,12 @@ import { hasActiveFilters, parseFilters, type WardrobeSearchParams } from "@/fea
 import { WardrobeFilters } from "@/features/wardrobe/WardrobeFilters";
 import { WardrobeEmpty } from "@/features/wardrobe/WardrobeEmpty";
 import { ItemGrid } from "@/features/wardrobe/ItemGrid";
+import { pageTitle } from "@/lib/i18n/metadata";
 
 type WardrobePageProps = { searchParams: Promise<WardrobeSearchParams> };
+
+
+export const generateMetadata = pageTitle((t) => t.nav.wardrobe);
 
 export default async function WardrobePage({ searchParams }: WardrobePageProps) {
   const [t, locale] = await Promise.all([getT(), getLocale()]);

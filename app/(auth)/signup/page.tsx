@@ -1,9 +1,11 @@
-import type { Metadata } from "next";
 import { getT } from "@/lib/i18n/server";
 import { AuthCard } from "@/features/auth/AuthCard";
 import { AuthForm } from "@/features/auth/AuthForm";
+import { pageTitle } from "@/lib/i18n/metadata";
 
-export const metadata: Metadata = { title: "Sign up" };
+
+
+export const generateMetadata = pageTitle((t) => t.auth.signupButton);
 
 export default async function SignupPage() {
   const t = await getT();

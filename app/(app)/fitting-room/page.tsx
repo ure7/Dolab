@@ -11,11 +11,15 @@ import { PageTitle } from "@/components/PageTitle";
 import { buttonClasses } from "@/components/ui/Button";
 import { FittingRoom } from "@/features/fitting-room/FittingRoom";
 import type { FittingRoomItem } from "@/features/fitting-room/types";
+import { pageTitle } from "@/lib/i18n/metadata";
 
 type FittingRoomPageProps = { searchParams: Promise<{ with?: string | string[]; outfit?: string }> };
 
 // Start with a simple everyday outfit so the mannequin isn't bare.
 const startWith: CategoryId[] = ["inner_top", "bottoms", "shoes"];
+
+
+export const generateMetadata = pageTitle((t) => t.nav.fittingRoom);
 
 export default async function FittingRoomPage({ searchParams }: FittingRoomPageProps) {
   const [t, profile, wardrobe, params] = await Promise.all([getT(), getProfile(), listItems(), searchParams]);

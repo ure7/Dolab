@@ -11,6 +11,7 @@ import { PageTitle } from "@/components/PageTitle";
 import { buttonClasses } from "@/components/ui/Button";
 import { IdeaCard, SavedOutfitCard } from "@/features/outfits/OutfitCards";
 import type { FittingRoomItem } from "@/features/fitting-room/types";
+import { pageTitle } from "@/lib/i18n/metadata";
 
 type OutfitsPageProps = { searchParams: Promise<{ seed?: string }> };
 
@@ -22,6 +23,9 @@ function describe(reason: IdeaReason, t: Dictionary): string {
 }
 
 const grid = "grid grid-cols-2 gap-[clamp(0.75rem,1.2vw,1.25rem)] md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5";
+
+
+export const generateMetadata = pageTitle((t) => t.nav.outfits);
 
 export default async function OutfitsPage({ searchParams }: OutfitsPageProps) {
   const [t, locale, wardrobe, outfits, { seed }] = await Promise.all([getT(), getLocale(), listItems(), listOutfits(), searchParams]);

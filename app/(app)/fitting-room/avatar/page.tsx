@@ -3,6 +3,10 @@ import { getProfile } from "@/lib/db/profile";
 import { toBodyProfile } from "@/lib/body/profile";
 import { PageTitle } from "@/components/PageTitle";
 import { AvatarForm } from "@/features/profile/AvatarForm";
+import { pageTitle } from "@/lib/i18n/metadata";
+
+
+export const generateMetadata = pageTitle((t) => t.avatar.title);
 
 export default async function AvatarPage() {
   const [t, profile] = await Promise.all([getT(), getProfile()]);

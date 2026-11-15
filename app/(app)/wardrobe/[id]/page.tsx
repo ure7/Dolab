@@ -11,8 +11,12 @@ import { ItemForm } from "@/features/wardrobe/ItemForm";
 import { DeleteItemButton, MarkAsBoughtButton } from "@/features/wardrobe/ItemActions";
 import { AddFromItemButton } from "@/features/shopping/ShoppingParts";
 import { createClient } from "@/lib/supabase/server";
+import { pageTitle } from "@/lib/i18n/metadata";
 
 type EditItemPageProps = { params: Promise<{ id: string }> };
+
+
+export const generateMetadata = pageTitle((t) => t.wardrobe.editItemTitle);
 
 export default async function EditItemPage({ params }: EditItemPageProps) {
   const { id } = await params;

@@ -9,6 +9,10 @@ import { PageTitle } from "@/components/PageTitle";
 import { ItemImage } from "@/features/wardrobe/ItemImage";
 import { AddFromItemButton, AddShoppingForm, BudgetCard, ClearBoughtButton, ShoppingRow } from "@/features/shopping/ShoppingParts";
 import type { ItemWithPhotos } from "@/types/database";
+import { pageTitle } from "@/lib/i18n/metadata";
+
+
+export const generateMetadata = pageTitle((t) => t.nav.shopping);
 
 export default async function ShoppingPage() {
   const [t, locale, entries, wardrobe, profile] = await Promise.all([getT(), getLocale(), listShopping(), listItems(), getProfile()]);

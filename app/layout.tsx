@@ -16,10 +16,13 @@ const plexArabic = IBM_Plex_Sans_Arabic({
   weight: ["400", "500", "600", "700"],
 });
 
-export const metadata: Metadata = {
-  title: { default: "Dolab | دولاب", template: "%s · Dolab" },
-  description: "Your wardrobe, outfits and shopping list — in one place.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = getDictionary(await getLocale());
+  return {
+    title: { default: "Dolab | دولاب", template: "%s · Dolab" },
+    description: t.common.appDescription,
+  };
+}
 
 export const viewport: Viewport = {
   themeColor: theme.background,
