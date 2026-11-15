@@ -49,7 +49,7 @@ Run each file in `supabase/migrations/` **once, in order**, in Supabase
 | 2 | Wardrobe + "try before you buy" | ✅ |
 | 3 | Fitting room: outfit board (main view), ghost mannequin, body profile + size hints, better background removal | ✅ |
 | 4 | Saved outfits (codes like 1.2, variations, jacket open/closed) + outfit ideas + "Thinking of buying?" | ✅ |
-| 5 | Shopping list (move not-owned items there) | |
+| 5 | Shopping list: Need / Nice to have, budget, suggestions from not-owned and worn-out items, ticking off moves items into the wardrobe | ✅ |
 | 6 | Arabic/RTL polish, family invite link, README + deploy guide | |
 | 7 | Extras (below) | |
 

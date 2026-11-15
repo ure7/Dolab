@@ -68,7 +68,11 @@ export async function markAsBought(id: string): Promise<ItemActionResult> {
     .eq("status", "not_owned");
   if (error) return { status: "error", errorKey: "saveFailed" };
 
+  // If it was on the shopping list, tick it off there too.
+  await supabase.from("shopping_items").update({ is_done: true }).eq("item_id", id);
+
   revalidatePath("/wardrobe");
+  revalidatePath("/shopping");
   revalidatePath(`/wardrobe/${id}`);
   return redirect(`/wardrobe/${id}`);
 }

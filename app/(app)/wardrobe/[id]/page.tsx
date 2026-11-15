@@ -9,6 +9,8 @@ import { formatDate } from "@/lib/helpers/format";
 import { PageTitle } from "@/components/PageTitle";
 import { ItemForm } from "@/features/wardrobe/ItemForm";
 import { DeleteItemButton, MarkAsBoughtButton } from "@/features/wardrobe/ItemActions";
+import { AddFromItemButton } from "@/features/shopping/ShoppingParts";
+import { createClient } from "@/lib/supabase/server";
 
 type EditItemPageProps = { params: Promise<{ id: string }> };
 
@@ -18,6 +20,11 @@ export default async function EditItemPage({ params }: EditItemPageProps) {
 
   // RLS means someone else's item id also comes back empty → plain 404.
   if (!item) notFound();
+
+  // Is this "not owned yet" item already on the shopping list?
+  const supabase = await createClient();
+  const { count } = await supabase.from("shopping_items").select("id", { count: "exact", head: true }).eq("item_id", item.id);
+  const onShoppingList = (count ?? 0) > 0;
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
@@ -34,8 +41,9 @@ export default async function EditItemPage({ params }: EditItemPageProps) {
       </div>
 
       {item.status === "not_owned" && (
-        <div className="rounded-2xl border border-accent/40 bg-accent/10 p-4">
+        <div className="flex flex-wrap items-start gap-3 rounded-2xl border border-accent/40 bg-accent/10 p-4">
           <MarkAsBoughtButton id={item.id} />
+          <AddFromItemButton itemId={item.id} reason="buy" onList={onShoppingList} label={t.shopping.addToShopping} />
         </div>
       )}
 

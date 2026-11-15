@@ -81,6 +81,7 @@ export type ShoppingItem = {
   price_estimate: number | null;
   is_done: boolean;
   notes: string | null;
+  item_id: string | null; // migration 0004: linked "not owned yet" wardrobe item
   created_at: string;
   updated_at: string;
 };
