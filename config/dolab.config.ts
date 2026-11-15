@@ -94,6 +94,35 @@ export const clothingColours = [
 export type ColourId = (typeof clothingColours)[number]["id"];
 
 // ---------------------------------------------------------------------------
+// Outfit ideas. Neutral colours (above) go with everything. Outfits with ONE
+// accent colour are always suggested; with TWO accent colours only if the
+// pair is listed here. Add or remove pairs to match your family's taste.
+// ---------------------------------------------------------------------------
+export const colourHarmonies: [ColourId, ColourId][] = [
+  ["brown", "light_blue"],
+  ["brown", "blue"],
+  ["brown", "green"],
+  ["brown", "olive"],
+  ["brown", "orange"],
+  ["olive", "burgundy"],
+  ["olive", "orange"],
+  ["olive", "light_blue"],
+  ["burgundy", "pink"],
+  ["light_blue", "pink"],
+  ["light_blue", "yellow"],
+  ["blue", "orange"],
+  ["purple", "yellow"],
+  ["green", "pink"],
+];
+
+export const ideasConfig = {
+  /** How many ideas to show on the Outfits page. */
+  count: 6,
+  /** An item appears in at most this many ideas, so the list stays varied. */
+  maxRepeatsPerItem: 2,
+};
+
+// ---------------------------------------------------------------------------
 // Item condition and shopping list sections
 // ---------------------------------------------------------------------------
 export const conditions = ["good", "worn_out"] as const;

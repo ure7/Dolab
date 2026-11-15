@@ -17,6 +17,7 @@ import { OutfitBoard } from "./OutfitBoard";
 import { CutoutImage } from "./CutoutImage";
 import { FlatGarment } from "./FlatGarment";
 import type { FittingRoomItem } from "./types";
+import { SaveOutfitPanel, type EditingOutfit } from "@/features/outfits/SaveOutfitPanel";
 
 type View = "board" | "mannequin";
 type Selection = Partial<Record<CategoryId, string>>; // category → item id
@@ -27,11 +28,14 @@ type FittingRoomProps = {
   initialSelection: Selection;
   /** false until the user has filled in the avatar page (then sizes are guesses from defaults). */
   hasProfile: boolean;
-  /** Outer layer worn open (default) or closed. (Saving this per outfit comes with Phase 4.) */
+  /** Outer layer worn open (default) or closed — saved with the outfit. */
   initialOuterOpen?: boolean;
+  /** The saved outfit being edited (opened from the Outfits page), if any. */
+  editing?: EditingOutfit | null;
+  existingCodes?: string[];
 };
 
-export function FittingRoom({ body, items, initialSelection, hasProfile, initialOuterOpen = true }: FittingRoomProps) {
+export function FittingRoom({ body, items, initialSelection, hasProfile, initialOuterOpen = true, editing = null, existingCodes = [] }: FittingRoomProps) {
   const { t, locale } = useI18n();
   const [view, setView] = useState<View>("board"); // the outfit board is the main view
   const [selection, setSelection] = useState<Selection>(initialSelection);
@@ -137,6 +141,8 @@ export function FittingRoom({ body, items, initialSelection, hasProfile, initial
             )}
           </p>
         )}
+
+        <SaveOutfitPanel itemIds={chosen.map((item) => item.id)} jacketOpen={outerOpen} editing={editing} existingCodes={existingCodes} />
       </section>
 
       {/* ---- the item pickers ---- */}

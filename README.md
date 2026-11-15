@@ -39,6 +39,7 @@ Run each file in `supabase/migrations/` **once, in order**, in Supabase
 | `0001_init.sql` | Tables, security rules, photo storage |
 | `0002_items_try_before_you_buy.sql` | "Not owned yet" items (store, price, link) |
 | `0003_body_profile.sql` | Body profile (sizing hints, ghost-mannequin proportions) |
+| `0004_outfits_shopping_wear_share_weather.sql` | Jacket open/closed per outfit, shopping-list links, wear tracker, share links, weather location |
 
 ## Roadmap
 
@@ -47,7 +48,7 @@ Run each file in `supabase/migrations/` **once, in order**, in Supabase
 | 1 | Setup + login | ✅ |
 | 2 | Wardrobe + "try before you buy" | ✅ |
 | 3 | Fitting room: outfit board (main view), ghost mannequin, body profile + size hints, better background removal | ✅ |
-| 4 | Saved outfits + outfit ideas (incl. not-owned items) | |
+| 4 | Saved outfits (codes like 1.2, variations, jacket open/closed) + outfit ideas + "Thinking of buying?" | ✅ |
 | 5 | Shopping list (move not-owned items there) | |
 | 6 | Arabic/RTL polish, family invite link, README + deploy guide | |
 | 7 | Extras (below) | |

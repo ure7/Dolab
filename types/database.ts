@@ -58,6 +58,9 @@ export type Outfit = {
   code: string; // e.g. "1.2"
   name: string | null;
   notes: string | null;
+  // migration 0004
+  jacket_open: boolean; // outer layer worn open (true) or closed
+  share_token: string | null; // set = shared with a public read-only link
   created_at: string;
   updated_at: string;
 };
