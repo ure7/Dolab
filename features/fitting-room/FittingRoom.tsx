@@ -27,13 +27,16 @@ type FittingRoomProps = {
   initialSelection: Selection;
   /** false until the user has filled in the avatar page (then sizes are guesses from defaults). */
   hasProfile: boolean;
+  /** Outer layer worn open (default) or closed. (Saving this per outfit comes with Phase 4.) */
+  initialOuterOpen?: boolean;
 };
 
-export function FittingRoom({ body, items, initialSelection, hasProfile }: FittingRoomProps) {
+export function FittingRoom({ body, items, initialSelection, hasProfile, initialOuterOpen = true }: FittingRoomProps) {
   const { t, locale } = useI18n();
-  const [view, setView] = useState<View>("board") // the outfit board is the main view;
+  const [view, setView] = useState<View>("board"); // the outfit board is the main view
   const [selection, setSelection] = useState<Selection>(initialSelection);
   const [result, setResult] = useState<TryOnResult | null>(null);
+  const [outerOpen, setOuterOpen] = useState(initialOuterOpen);
 
   const byCategory = useMemo(() => {
     const groups = new Map<CategoryId, FittingRoomItem[]>();
@@ -51,15 +54,16 @@ export function FittingRoom({ body, items, initialSelection, hasProfile }: Fitti
   // that arrive after the outfit has changed again.
   useEffect(() => {
     let live = true;
-    renderTryOn({ body, items: chosen }).then((next) => live && setResult(next));
+    renderTryOn({ body, items: chosen, outerOpen }).then((next) => live && setResult(next));
     return () => {
       live = false;
     };
-  }, [body, chosen]);
+  }, [body, chosen, outerOpen]);
 
   const toggle = (category: CategoryId, id: string | null) =>
     setSelection((current) => ({ ...current, [category]: id ?? undefined }));
 
+  const wearsOuterLayer = chosen.some((item) => item.category === "outer_layer");
   const notOwned = chosen.filter((item) => item.status === "not_owned");
   const notOwnedTotal = notOwned.reduce((sum, item) => sum + (item.price ?? 0), 0);
 
@@ -103,6 +107,23 @@ export function FittingRoom({ body, items, initialSelection, hasProfile }: Fitti
           <p className="grid aspect-4/5 place-items-center rounded-3xl border border-dashed border-line p-8 text-center text-muted">
             {t.fittingRoom.boardEmpty}
           </p>
+        )}
+
+        {view === "mannequin" && wearsOuterLayer && (
+          <div role="radiogroup" aria-label={t.fittingRoom.jacketLabel} className="grid grid-cols-2 gap-1 rounded-xl border border-line bg-surface p-1 text-sm">
+            {[true, false].map((isOpen) => (
+              <button
+                key={String(isOpen)}
+                type="button"
+                role="radio"
+                aria-checked={outerOpen === isOpen}
+                onClick={() => setOuterOpen(isOpen)}
+                className={`press rounded-lg py-2 font-medium ${outerOpen === isOpen ? "bg-raised text-fg" : "text-muted hover:text-fg"}`}
+              >
+                {isOpen ? t.fittingRoom.jacketOpen : t.fittingRoom.jacketClosed}
+              </button>
+            ))}
+          </div>
         )}
 
         {notOwned.length > 0 && (

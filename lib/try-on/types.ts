@@ -17,6 +17,8 @@ export type TryOnItem = {
 export type TryOnRequest = {
   body: BodyProfile;
   items: TryOnItem[];
+  /** Wear the outer layer (jacket, open shirt) open, showing the layers underneath. Default: open. */
+  outerOpen?: boolean;
 };
 
 /** Where the visible garment sits inside a cut-out photo (in image pixels). */
@@ -33,6 +35,8 @@ export type TryOnLayer = {
   crop: PhotoCrop | null;
   /** Optional SVG path; only what's inside it is shown (e.g. no sleeves under a jacket). */
   clip: string | null;
+  /** Worn open: draw the photo as left/right halves, each moved `gap / 2` outwards. */
+  open: { gap: number } | null;
 };
 
 export type TryOnResult =

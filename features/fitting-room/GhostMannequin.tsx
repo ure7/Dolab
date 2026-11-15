@@ -24,11 +24,18 @@ export function GhostMannequin({ body, layers = [], canvasHeight = CANVAS.height
   const wearsBottoms = layers.some((l) => l.item.category === "bottoms");
 
   return (
-    <svg viewBox={`0 0 ${CANVAS.width} ${canvasHeight}`} className={className} role="img" aria-label={title}>
+    <svg viewBox={`0 0 ${CANVAS.width} ${canvasHeight}`} className={className} role="img" aria-label={title} overflow="visible">
       <defs>
         {/* soft contact shadow so photos sit on each other instead of looking pasted */}
         <filter id={`${id}-shadow`} x="-10%" y="-10%" width="120%" height="125%">
           <feDropShadow dx="0" dy="4" stdDeviation="5" floodColor="#000" floodOpacity="0.4" />
+        </filter>
+        {/* open jacket: each front panel casts a shadow INWARDS onto the layer below */}
+        <filter id={`${id}-shadowL`} x="-15%" y="-10%" width="135%" height="125%">
+          <feDropShadow dx="5" dy="3" stdDeviation="5" floodColor="#000" floodOpacity="0.55" />
+        </filter>
+        <filter id={`${id}-shadowR`} x="-20%" y="-10%" width="135%" height="125%">
+          <feDropShadow dx="-5" dy="3" stdDeviation="5" floodColor="#000" floodOpacity="0.55" />
         </filter>
       </defs>
 
@@ -49,7 +56,7 @@ export function GhostMannequin({ body, layers = [], canvasHeight = CANVAS.height
             </g>
           );
         }
-        return <PhotoLayer key={key} layer={layer} filterId={`${id}-shadow`} clipId={`${id}-clip${index}`} />;
+        return <PhotoLayer key={key} layer={layer} filterId={`${id}-shadow`} idPrefix={`${id}-${index}`} svgId={id} />;
       })}
     </svg>
   );
@@ -58,8 +65,9 @@ export function GhostMannequin({ body, layers = [], canvasHeight = CANVAS.height
 // A cut-out photo at the spot renderTryOn() chose. The nested <svg>'s viewBox
 // is the visible part of the photo (no transparent margins); its aspect
 // ratio matches the rect, so nothing is stretched.
-function PhotoLayer({ layer, filterId, clipId }: { layer: TryOnLayer; filterId: string; clipId: string }) {
-  const { rect, crop, clip, item } = layer;
+function PhotoLayer({ layer, filterId, idPrefix, svgId }: { layer: TryOnLayer; filterId: string; idPrefix: string; svgId: string }) {
+  const { rect, crop, clip, item, open } = layer;
+  const clipId = `${idPrefix}-clip`;
   const href = item.cutoutUrl ?? "";
 
   const picture = crop ? (
@@ -77,6 +85,28 @@ function PhotoLayer({ layer, filterId, clipId }: { layer: TryOnLayer; filterId: 
   ) : (
     <image href={href} x={rect.x} y={rect.y} width={rect.width} height={rect.height} preserveAspectRatio="xMidYMid meet" />
   );
+
+  // Worn open: the same photo twice, each clipped to one half (split at the
+  // garment's centre line) and moved outwards, so the layer below shows.
+  if (open) {
+    const middle = rect.x + rect.width / 2;
+    const halves = [
+      { side: "L", x: rect.x - rect.width, shift: -open.gap / 2 },
+      { side: "R", x: middle, shift: open.gap / 2 },
+    ] as const;
+    return (
+      <g>
+        {halves.map(({ side, x, shift }) => (
+          <g key={side} transform={`translate(${shift} 0)`} filter={`url(#${svgId}-shadow${side})`}>
+            <clipPath id={`${idPrefix}-half${side}`}>
+              <rect x={x} y={rect.y - rect.height} width={side === "L" ? middle - x : rect.width * 2} height={rect.height * 3} />
+            </clipPath>
+            <g clipPath={`url(#${idPrefix}-half${side})`}>{picture}</g>
+          </g>
+        ))}
+      </g>
+    );
+  }
 
   return (
     <g filter={`url(#${filterId})`}>

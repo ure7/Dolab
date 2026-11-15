@@ -166,6 +166,9 @@ export const en = {
     setupBody: "Add your height, weight and body shape for sizing hints and a mannequin with your proportions.",
     setupButton: "Set up avatar",
     tryOn: "Try it on",
+    jacketLabel: "How to wear the outer layer",
+    jacketOpen: "Jacket open",
+    jacketClosed: "Jacket closed",
     sizeHint: "Your likely size: tops {top} · bottoms {bottom}. Always check the shop's size chart.",
   },
   avatar: {
