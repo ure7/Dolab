@@ -4,7 +4,7 @@ import { appConfig } from "@/config/dolab.config";
 import { getSupabaseEnv } from "./env";
 
 // Pages anyone can open without logging in.
-const PUBLIC_PATHS = ["/login", "/signup", "/auth"];
+const PUBLIC_PATHS = ["/login", "/signup", "/auth", "/s"]; // "/s/…" = shared outfits
 // Pages that make no sense once you're logged in.
 const GUEST_ONLY_PATHS = ["/login", "/signup"];
 

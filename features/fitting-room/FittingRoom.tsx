@@ -18,6 +18,7 @@ import { CutoutImage } from "./CutoutImage";
 import { FlatGarment } from "./FlatGarment";
 import type { FittingRoomItem } from "./types";
 import { SaveOutfitPanel, type EditingOutfit } from "@/features/outfits/SaveOutfitPanel";
+import { WoreTodayButton } from "@/features/wear/WoreTodayButton";
 
 type View = "board" | "mannequin";
 type Selection = Partial<Record<CategoryId, string>>; // category → item id
@@ -33,9 +34,11 @@ type FittingRoomProps = {
   /** The saved outfit being edited (opened from the Outfits page), if any. */
   editing?: EditingOutfit | null;
   existingCodes?: string[];
+  /** item id → last day worn, for the "Wore it today" button. */
+  lastWorn?: Record<string, string>;
 };
 
-export function FittingRoom({ body, items, initialSelection, hasProfile, initialOuterOpen = true, editing = null, existingCodes = [] }: FittingRoomProps) {
+export function FittingRoom({ body, items, initialSelection, hasProfile, initialOuterOpen = true, editing = null, existingCodes = [], lastWorn = {} }: FittingRoomProps) {
   const { t, locale } = useI18n();
   const [view, setView] = useState<View>("board"); // the outfit board is the main view
   const [selection, setSelection] = useState<Selection>(initialSelection);
@@ -143,6 +146,8 @@ export function FittingRoom({ body, items, initialSelection, hasProfile, initial
         )}
 
         <SaveOutfitPanel itemIds={chosen.map((item) => item.id)} jacketOpen={outerOpen} editing={editing} existingCodes={existingCodes} />
+        {/* key: a different set of items starts with a fresh "worn today?" state */}
+        <WoreTodayButton key={chosen.map((i) => i.id).join()} itemIds={chosen.filter((i) => i.status === "owned").map((i) => i.id)} outfitId={editing?.id} lastWorn={lastWorn} />
       </section>
 
       {/* ---- the item pickers ---- */}

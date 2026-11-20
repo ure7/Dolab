@@ -3,6 +3,7 @@ import { getT } from "@/lib/i18n/server";
 import { NavLinks } from "./NavLinks";
 import { LanguageToggle } from "./LanguageToggle";
 import { SignOutButton } from "./SignOutButton";
+import { ProductTour } from "./ProductTour";
 
 // Top bar for logged-in pages. On phones the page links move to <BottomNav />.
 export async function AppHeader() {
@@ -15,6 +16,7 @@ export async function AppHeader() {
           <NavLinks variant="top" />
         </nav>
         <div className="flex items-center gap-1">
+          <ProductTour />
           <LanguageToggle />
           <SignOutButton />
         </div>

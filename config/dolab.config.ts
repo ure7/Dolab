@@ -115,6 +115,20 @@ export const colourHarmonies: [ColourId, ColourId][] = [
   ["green", "pink"],
 ];
 
+// ---------------------------------------------------------------------------
+// Outfit board: typical size of each kind of item laid flat, in centimetres
+// (width × height). The board draws everything at ONE scale from these, so a
+// T-shirt and a pair of jeans always look right next to each other.
+// ---------------------------------------------------------------------------
+export const boardItemSizes: Record<CategoryId, { width: number; height: number }> = {
+  inner_top: { width: 70, height: 72 },
+  hoodie: { width: 80, height: 72 },
+  outer_layer: { width: 85, height: 75 },
+  bottoms: { width: 52, height: 105 },
+  shoes: { width: 36, height: 30 }, // a pair, seen from above
+  accessory: { width: 32, height: 30 },
+};
+
 export const ideasConfig = {
   /** How many ideas to show on the Outfits page. */
   count: 6,

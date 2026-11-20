@@ -12,6 +12,8 @@ import { Alert } from "@/components/ui/Alert";
 import { OutfitBoard } from "@/features/fitting-room/OutfitBoard";
 import type { FittingRoomItem } from "@/features/fitting-room/types";
 import { deleteOutfit, renameOutfit, saveOutfit } from "./actions";
+import { WoreTodayButton } from "@/features/wear/WoreTodayButton";
+import { ShareButton } from "./ShareButton";
 import type { OutfitErrorKey } from "./validation";
 
 function notOwnedTotal(items: FittingRoomItem[]) {
@@ -24,7 +26,21 @@ const cardClasses = "flex flex-col overflow-hidden rounded-2xl border border-lin
 // ---------------------------------------------------------------------------
 // A saved outfit: mini flat-lay + code/name + actions.
 // ---------------------------------------------------------------------------
-export function SavedOutfitCard({ id, code, name, items }: { id: string; code: string; name: string | null; items: FittingRoomItem[] }) {
+export function SavedOutfitCard({
+  id,
+  code,
+  name,
+  items,
+  lastWorn,
+  shareToken,
+}: {
+  id: string;
+  code: string;
+  name: string | null;
+  items: FittingRoomItem[];
+  lastWorn: Record<string, string>;
+  shareToken: string | null;
+}) {
   const { t, locale } = useI18n();
   const [error, setError] = useState<OutfitErrorKey | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -61,6 +77,7 @@ export function SavedOutfitCard({ id, code, name, items }: { id: string; code: s
           {plural(t.outfits.itemCount, items.length, locale)}
           {count > 0 && total > 0 && <span className="text-accent"> · {format(t.outfits.notOwnedTotal, { total: formatPrice(total, locale) })}</span>}
         </p>
+        <WoreTodayButton itemIds={items.filter((i) => i.status === "owned").map((i) => i.id)} outfitId={id} lastWorn={lastWorn} size="small" />
         <div className="mt-auto flex flex-wrap gap-1.5 pt-1">
           <Link href={`/fitting-room?outfit=${id}`} className={buttonClasses("secondary", "min-h-9 px-3 py-1.5 text-xs")}>
             {t.outfits.open}
@@ -87,6 +104,7 @@ export function SavedOutfitCard({ id, code, name, items }: { id: string; code: s
             {t.outfits.delete}
           </Button>
         </div>
+        <ShareButton outfitId={id} title={title} initialToken={shareToken} />
         {error && <Alert tone="error">{t.outfits.errors[error]}</Alert>}
       </div>
     </article>

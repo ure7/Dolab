@@ -3,6 +3,19 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   // cacheComponents is off on purpose: every Dolab page is personal (depends on
   // the logged-in user), so caching rules would add complexity with no benefit.
+  // The service worker must never be cached by the browser, or app updates
+  // would be stuck behind an old copy.
+  async headers() {
+    return [
+      {
+        source: "/sw.js",
+        headers: [
+          { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
+          { key: "Content-Type", value: "application/javascript; charset=utf-8" },
+        ],
+      },
+    ];
+  },
   turbopack: {
     rules: {
       "*.css": {

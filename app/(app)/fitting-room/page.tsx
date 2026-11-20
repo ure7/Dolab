@@ -3,6 +3,7 @@ import type { CategoryId } from "@/config/dolab.config";
 import { getT } from "@/lib/i18n/server";
 import { listItems } from "@/lib/db/items";
 import { getOutfit, listOutfits } from "@/lib/db/outfits";
+import { listWearLogs, summarise } from "@/lib/db/wear";
 import type { EditingOutfit } from "@/features/outfits/SaveOutfitPanel";
 import { getProfile } from "@/lib/db/profile";
 import { hasBodyProfile, toBodyProfile } from "@/lib/body/profile";
@@ -24,7 +25,12 @@ export const generateMetadata = pageTitle((t) => t.nav.fittingRoom);
 export default async function FittingRoomPage({ searchParams }: FittingRoomPageProps) {
   const [t, profile, wardrobe, params] = await Promise.all([getT(), getProfile(), listItems(), searchParams]);
   // ?outfit=<id> opens a saved outfit for editing.
-  const [outfit, allOutfits] = await Promise.all([params.outfit ? getOutfit(params.outfit) : null, listOutfits()]);
+  const [outfit, allOutfits, recentWears] = await Promise.all([
+    params.outfit ? getOutfit(params.outfit) : null,
+    listOutfits(),
+    listWearLogs(2),
+  ]);
+  const lastWorn = Object.fromEntries([...summarise(recentWears)].map(([id, s]) => [id, s.last]));
 
   const items: FittingRoomItem[] = wardrobe.map((item) => ({
     ...toTryOnItem(item),
@@ -74,6 +80,7 @@ export default async function FittingRoomPage({ searchParams }: FittingRoomPageP
         initialOuterOpen={outfit?.jacket_open ?? true}
         editing={editing}
         existingCodes={allOutfits.map((o) => o.code)}
+        lastWorn={lastWorn}
         // A different outfit = a fresh fitting room (new selection, new save panel).
         key={outfit?.id ?? "new"}
       />

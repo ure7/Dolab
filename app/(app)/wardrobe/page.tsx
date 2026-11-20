@@ -28,7 +28,10 @@ export default async function WardrobePage({ searchParams }: WardrobePageProps) 
           <PageTitle>{t.pages.wardrobe}</PageTitle>
           <p className="mt-1 text-sm text-muted">{plural(t.wardrobe.itemCount, items.length, locale)}</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <Link href="/stats" className={buttonClasses("ghost")}>
+            {t.wear.statsLink}
+          </Link>
           <Link href="/wardrobe/new?status=not_owned" className={buttonClasses("secondary")}>
             {t.wardrobe.addStoreItem}
           </Link>

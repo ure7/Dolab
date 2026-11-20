@@ -5,6 +5,10 @@ import { plural } from "@/lib/i18n/plural";
 import type { Dictionary } from "@/lib/i18n";
 import { listItems } from "@/lib/db/items";
 import { listOutfits } from "@/lib/db/outfits";
+import { listWearLogs, summarise } from "@/lib/db/wear";
+import { getProfile } from "@/lib/db/profile";
+import { adviceFor, getWeather, weatherKind } from "@/lib/weather";
+import { LocationPicker } from "@/features/weather/LocationPicker";
 import { toTryOnItem } from "@/lib/try-on";
 import { suggestOutfits, type IdeaReason } from "@/lib/ideas/suggest";
 import { PageTitle } from "@/components/PageTitle";
@@ -28,7 +32,20 @@ const grid = "grid grid-cols-2 gap-[clamp(0.75rem,1.2vw,1.25rem)] md:grid-cols-3
 export const generateMetadata = pageTitle((t) => t.nav.outfits);
 
 export default async function OutfitsPage({ searchParams }: OutfitsPageProps) {
-  const [t, locale, wardrobe, outfits, { seed }] = await Promise.all([getT(), getLocale(), listItems(), listOutfits(), searchParams]);
+  const [t, locale, wardrobe, outfits, recentWears, { seed }] = await Promise.all([
+    getT(),
+    getLocale(),
+    listItems(),
+    listOutfits(),
+    listWearLogs(2),
+    searchParams,
+  ]);
+  const profile = await getProfile();
+  const hasPlace = profile?.latitude != null && profile?.longitude != null;
+  const weather = hasPlace ? await getWeather(Number(profile!.latitude), Number(profile!.longitude)) : null;
+  const advice = weather ? adviceFor(weather) : null;
+  const place = profile?.city || t.weather.myLocation;
+  const lastWorn = Object.fromEntries([...summarise(recentWears)].map(([id, s]) => [id, s.last]));
 
   const byId = new Map<string, FittingRoomItem>(
     wardrobe.map((item) => [item.id, { ...toTryOnItem(item), price: item.price, storeName: item.store_name }]),
@@ -40,6 +57,10 @@ export default async function OutfitsPage({ searchParams }: OutfitsPageProps) {
   const saved = outfits.map((o) => o.itemIds);
   const seedNumber = Number(seed) || 1;
   const { ideas } = suggestOutfits({ items: ideaItems, saved, seed: seedNumber });
+  // Today's weather → ideas with the right number of layers (3 of them).
+  const weatherIdeas = advice
+    ? suggestOutfits({ items: ideaItems, saved, seed: seedNumber, limit: 3, layering: advice.layering, preferOuter: advice.rain })
+    : null;
 
   // "Thinking of buying?": how each not-owned item works with what you own.
   const candidates = wardrobe
@@ -58,6 +79,44 @@ export default async function OutfitsPage({ searchParams }: OutfitsPageProps) {
         </Link>
       </div>
 
+      {/* ---- today's weather ---- */}
+      <section className="flex flex-col gap-4 rounded-2xl border border-line bg-surface p-4 sm:p-5" aria-labelledby="weather-heading">
+        <h2 id="weather-heading" className="text-lg font-semibold">
+          {hasPlace ? format(t.weather.ideasFor, { place }) : t.weather.setUp}
+        </h2>
+        {!hasPlace && <p className="-mt-2 text-sm text-muted">{t.weather.setUpHint}</p>}
+        {hasPlace && !weather && <p className="text-sm text-muted">{t.weather.unavailable}</p>}
+        {weather && advice && (
+          <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+            <p className="text-3xl font-semibold" dir="ltr">
+              {weather.temperature}°
+            </p>
+            <p className="text-sm">
+              {t.weather.kinds[weatherKind(weather.code)]} · {format(t.weather.now, { temp: weather.temperature, feels: weather.feelsLike })}
+              <span className="block text-xs text-muted">
+                {format(t.weather.range, { high: weather.high, low: weather.low, rain: weather.rainChance })}
+              </span>
+            </p>
+            <p className="w-full text-sm font-medium text-accent">
+              {t.weather.bands[advice.band]} {advice.rain && t.weather.rainNote}
+            </p>
+          </div>
+        )}
+        {weatherIdeas && weatherIdeas.ideas.length > 0 && (
+          <>
+            {!weatherIdeas.matchedWeather && <p className="text-xs text-muted">{t.weather.noMatch}</p>}
+            <ul className={grid}>
+              {weatherIdeas.ideas.map((idea) => (
+                <li key={idea.itemIds.join()}>
+                  <IdeaCard items={itemsOf(idea.itemIds)} reason={describe(idea.reason, t)} />
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+        <LocationPicker startOpen={!hasPlace} />
+      </section>
+
       {/* ---- saved outfits ---- */}
       <section className="flex flex-col gap-4" aria-labelledby="saved-heading">
         <h2 id="saved-heading" className="text-lg font-semibold">
@@ -70,7 +129,7 @@ export default async function OutfitsPage({ searchParams }: OutfitsPageProps) {
           <ul className={grid}>
             {outfits.map((outfit) => (
               <li key={outfit.id}>
-                <SavedOutfitCard id={outfit.id} code={outfit.code} name={outfit.name} items={itemsOf(outfit.itemIds)} />
+                <SavedOutfitCard id={outfit.id} code={outfit.code} name={outfit.name} items={itemsOf(outfit.itemIds)} lastWorn={lastWorn} shareToken={outfit.share_token} />
               </li>
             ))}
           </ul>

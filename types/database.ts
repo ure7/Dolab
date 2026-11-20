@@ -21,6 +21,10 @@ export type Profile = {
   weight_kg: number | null;
   body_shape: BodyShape | null;
   skin_tone: string | null; // no longer used by the app (kept so old data is harmless)
+  // migration 0004: place for weather-based outfit ideas
+  city: string | null;
+  latitude: number | null;
+  longitude: number | null;
   created_at: string;
   updated_at: string;
 };

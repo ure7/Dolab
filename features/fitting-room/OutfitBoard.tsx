@@ -1,6 +1,6 @@
 "use client";
 
-import type { CategoryId } from "@/config/dolab.config";
+import { boardItemSizes, type CategoryId } from "@/config/dolab.config";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { FittingRoomItem } from "./types";
 import { CutoutImage } from "./CutoutImage";
@@ -8,81 +8,88 @@ import { FlatGarment } from "./FlatGarment";
 
 // ---------------------------------------------------------------------------
 // Layout. The board is a 100 × 125 grid (4:5). Like a fashion flat-lay:
-//   tops on top across the full width (outer layer overlapping from the right),
-//   then trousers, then shoes; accessories at the side of the trousers.
-// Each row has a maximum height so 2 items don't become giant and 6 items
-// still fit. Pictures are always fitted INSIDE their box, never stretched.
+//   tops on top (outer layer overlapping from the right), then trousers with
+//   accessories beside them, then shoes.
+// Every item gets a box of its typical REAL size (boardItemSizes in the
+// config, in cm) and the whole board uses ONE scale (grid units per cm), the
+// largest that still fits — so a T-shirt and jeans keep their real proportions
+// whether the outfit has 2 items or 6. Pictures are fitted inside their box,
+// never stretched.
 // ---------------------------------------------------------------------------
 const W = 100;
 const H = 125;
 const PAD = 6;
-const GAP = 2.5;
+const GAP_CM = 8; // space between rows / items, in real centimetres
+// How much each extra top tucks under the previous one (more when there are 3).
+const overlapFor = (tops: number) => (tops > 2 ? 0.42 : 0.25);
 
 type Box = { item: FittingRoomItem; x: number; y: number; w: number; h: number; z: number };
-
-const rowSpec = {
-  tops: { weight: 1, max: 50 },
-  bottoms: { weight: 1.3, max: 64 },
-  shoes: { weight: 0.45, max: 22 },
-} as const;
-type Row = keyof typeof rowSpec;
+type Row = "tops" | "bottoms" | "shoes";
 
 const rowOf = (c: CategoryId): Row | "side" =>
   c === "bottoms" ? "bottoms" : c === "shoes" ? "shoes" : c === "accessory" ? "side" : "tops";
 const topOrder: CategoryId[] = ["inner_top", "hoodie", "outer_layer"];
+const size = (item: FittingRoomItem) => boardItemSizes[item.category];
 
 export function layoutBoard(items: FittingRoomItem[]): Box[] {
+  const tops = items.filter((i) => rowOf(i.category) === "tops").sort((a, b) => topOrder.indexOf(a.category) - topOrder.indexOf(b.category));
+  const bottoms = items.filter((i) => rowOf(i.category) === "bottoms");
+  const shoes = items.filter((i) => rowOf(i.category) === "shoes");
   const side = items.filter((i) => rowOf(i.category) === "side");
-  const sideW = side.length ? 22 : 0;
-  const fullW = W - PAD * 2;
-  // Trousers + shoes share their rows with the accessory column; tops get the full width.
-  const mainX = PAD;
-  const mainW = fullW - (sideW ? sideW + GAP : 0);
-  let bottomsSpan: [number, number] | null = null;
 
-  // Which rows are used, and how tall each one is.
-  const rows = (Object.keys(rowSpec) as Row[]).filter((r) => items.some((i) => rowOf(i.category) === r));
-  const free = H - PAD * 2 - GAP * Math.max(0, rows.length - 1);
-  const totalWeight = rows.reduce((sum, r) => sum + rowSpec[r].weight, 0);
-  const heights = rows.map((r) => Math.min(rowSpec[r].max, (free * rowSpec[r].weight) / totalWeight));
-  const used = heights.reduce((a, b) => a + b, 0) + GAP * Math.max(0, rows.length - 1);
-  let y = (H - used) / 2; // centre the stack vertically
+  // ---- each row's size in centimetres ----
+  const OVERLAP = overlapFor(tops.length);
+  const topsWidth = tops.reduce((sum, item, k) => sum + size(item).width * (k === 0 ? 1 : 1 - OVERLAP), 0);
+  const topsHeight = Math.max(0, ...tops.map((i) => size(i).height));
+  const sideWidth = Math.max(0, ...side.map((i) => size(i).width));
+  const sideHeight = side.reduce((sum, i) => sum + size(i).height, 0) + GAP_CM * Math.max(0, side.length - 1);
+  const bottomsWidth = Math.max(0, ...bottoms.map((i) => size(i).width)) + (side.length ? GAP_CM + sideWidth : 0);
+  const bottomsHeight = Math.max(0, ...bottoms.map((i) => size(i).height), bottoms.length ? 0 : sideHeight);
+  const shoesWidth = Math.max(0, ...shoes.map((i) => size(i).width));
+  const shoesHeight = Math.max(0, ...shoes.map((i) => size(i).height));
+
+  const rows = [
+    { name: "tops" as const, width: topsWidth, height: topsHeight },
+    { name: "bottoms" as const, width: bottomsWidth, height: bottomsHeight },
+    { name: "shoes" as const, width: shoesWidth, height: shoesHeight },
+  ].filter((r) => r.height > 0);
+  if (rows.length === 0) return [];
+
+  // ---- one scale for everything: the biggest that fits the board ----
+  const totalHeightCm = rows.reduce((sum, r) => sum + r.height, 0) + GAP_CM * (rows.length - 1);
+  const widestCm = Math.max(...rows.map((r) => r.width));
+  const scale = Math.min((H - PAD * 2) / totalHeightCm, (W - PAD * 2) / widestCm);
 
   const boxes: Box[] = [];
-  rows.forEach((row, r) => {
-    const rowH = heights[r];
-    const rowItems = items.filter((i) => rowOf(i.category) === row);
-    if (row === "tops") {
-      // Side by side, each one overlapping the previous a little; the
-      // outer layer is last, so it lies on top, slightly lower.
-      const sorted = rowItems.sort((a, b) => topOrder.indexOf(a.category) - topOrder.indexOf(b.category));
-      const n = sorted.length;
-      const overlap = n > 2 ? 0.3 : 0.22;
-      const w = n === 1 ? fullW * 0.72 : fullW / (n - overlap * (n - 1));
-      const start = PAD + (fullW - (n === 1 ? w : fullW)) / 2;
-      sorted.forEach((item, k) => {
-        const drop = item.category === "outer_layer" && n > 1 ? rowH * 0.06 : 0;
-        boxes.push({ item, x: start + k * w * (1 - overlap), y: y + drop, w, h: rowH - drop, z: k + 1 });
+  let y = (H - totalHeightCm * scale) / 2; // centre the whole flat-lay vertically
+  for (const row of rows) {
+    const rowWidth = row.width * scale;
+    const left = (W - rowWidth) / 2;
+    if (row.name === "tops") {
+      let x = left;
+      tops.forEach((item, k) => {
+        const { width, height } = size(item);
+        // the outer layer lies on top of the others, slightly lower
+        const drop = item.category === "outer_layer" && tops.length > 1 ? 3 * scale : 0;
+        boxes.push({ item, x, y: y + drop, w: width * scale, h: height * scale, z: k + 1 });
+        x += width * scale * (1 - OVERLAP);
       });
+    } else if (row.name === "bottoms") {
+      let x = left;
+      for (const item of bottoms) {
+        boxes.push({ item, x, y, w: size(item).width * scale, h: size(item).height * scale, z: 0 });
+        x += size(item).width * scale + GAP_CM * scale;
+      }
+      // accessories stacked beside the trousers, vertically centred
+      let sy = y + ((row.height - sideHeight) * scale) / 2;
+      for (const item of side) {
+        boxes.push({ item, x: left + rowWidth - sideWidth * scale, y: sy, w: size(item).width * scale, h: size(item).height * scale, z: 5 });
+        sy += (size(item).height + GAP_CM) * scale;
+      }
     } else {
-      // Trousers and shoes are centred under the tops.
-      const share = row === "bottoms" ? 0.7 : 0.62;
-      const w = mainW * share;
-      for (const item of rowItems) boxes.push({ item, x: mainX + (mainW - w) / 2, y, w, h: rowH, z: 0 });
-      if (row === "bottoms") bottomsSpan = [y, y + rowH];
+      for (const item of shoes) boxes.push({ item, x: left, y, w: size(item).width * scale, h: size(item).height * scale, z: 0 });
     }
-    y += rowH + GAP;
-  });
-
-  // Accessories: stacked beside the trousers (or centred, if there are none).
-  if (side.length) {
-    const [top, bottom] = bottomsSpan ?? [PAD, H - PAD];
-    const each = Math.min(24, (bottom - top) / side.length - GAP);
-    let sy = (top + bottom - (each + GAP) * side.length + GAP) / 2;
-    for (const item of side) {
-      boxes.push({ item, x: W - PAD - sideW, y: sy, w: sideW, h: each, z: 5 });
-      sy += each + GAP;
-    }
+    y += (row.height + GAP_CM) * scale;
   }
   return boxes;
 }

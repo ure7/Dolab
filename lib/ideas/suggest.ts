@@ -33,6 +33,14 @@ export type SuggestOptions = {
   /** Different number → different ideas among equally good ones ("Shuffle"). */
   seed?: number;
   limit?: number;
+  /**
+   * Weather layering (see lib/weather.ts): "none" = no hoodie/jacket,
+   * "one" = exactly one, "outer" = must include a jacket, "two" = hoodie AND jacket.
+   * If your wardrobe can't match it, ideas fall back to any layering.
+   */
+  layering?: "none" | "one" | "outer" | "two";
+  /** Rain likely: ideas with a jacket rank higher. */
+  preferOuter?: boolean;
 };
 
 const neutral = new Set<ColourId>(clothingColours.filter((c) => c.neutral).map((c) => c.id));
@@ -70,11 +78,19 @@ function random(seed: number) {
 
 const MAX_COMBINATIONS = 20_000; // keeps big wardrobes fast
 
-export function suggestOutfits({ items, saved = [], mustInclude, seed = 1, limit = ideasConfig.count }: SuggestOptions): {
+export function suggestOutfits(options: SuggestOptions): {
   ideas: Idea[];
   /** How many good combinations exist in total (before trimming to `limit`). */
   total: number;
+  /** false when the requested weather layering couldn't be matched. */
+  matchedWeather: boolean;
 } {
+  const result = suggest(options);
+  if (options.layering && result.total === 0) return { ...suggest({ ...options, layering: undefined }), matchedWeather: false };
+  return { ...result, matchedWeather: true };
+}
+
+function suggest({ items, saved = [], mustInclude, seed = 1, limit = ideasConfig.count, layering, preferOuter = false }: SuggestOptions) {
   const rand = random(seed);
   const byId = new Map(items.map((i) => [i.id, i]));
   // Usable items: in good condition; owned, except the one we're asked about.
@@ -86,10 +102,25 @@ export function suggestOutfits({ items, saved = [], mustInclude, seed = 1, limit
   const outers = of("outer_layer");
   // With no T-shirts/shirts, a hoodie can be the main top.
   const tops = innerTops.length > 0 ? innerTops : hoodies;
-  const layers: (IdeaItem | null)[] = [null, ...(innerTops.length > 0 ? hoodies : []), ...outers];
+  const layerHoodies = innerTops.length > 0 ? hoodies : [];
+  // Layer options over the top: none, a hoodie, a jacket, or hoodie + jacket.
+  const allLayers: IdeaItem[][] = [
+    [],
+    ...layerHoodies.map((h) => [h]),
+    ...outers.map((o) => [o]),
+    ...layerHoodies.flatMap((h) => outers.map((o) => [h, o])),
+  ];
+  const hasOuter = (l: IdeaItem[]) => l.some((i) => i.category === "outer_layer");
+  const layers = allLayers.filter((l) => {
+    if (layering === "none") return l.length === 0;
+    if (layering === "one") return l.length === 1;
+    if (layering === "outer") return hasOuter(l);
+    if (layering === "two") return l.length === 2;
+    return l.length <= 1; // no weather: keep ideas simple (at most one layer)
+  });
   const bottoms = of("bottoms");
   const shoes: (IdeaItem | null)[] = of("shoes").length > 0 ? of("shoes") : [null];
-  if (tops.length === 0 || bottoms.length === 0) return { ideas: [], total: 0 };
+  if (tops.length === 0 || bottoms.length === 0 || layers.length === 0) return { ideas: [], total: 0 };
 
   const savedSignatures = new Set(saved.map((ids) => signature(ids, byId)));
   const size = [tops.length, layers.length, bottoms.length, shoes.length];
@@ -99,7 +130,7 @@ export function suggestOutfits({ items, saved = [], mustInclude, seed = 1, limit
   const pickAt = (n: number) => {
     const [t, l, b] = [n % size[0], Math.floor(n / size[0]) % size[1], Math.floor(n / (size[0] * size[1])) % size[2]];
     const s = Math.floor(n / (size[0] * size[1] * size[2]));
-    return [tops[t], layers[l], bottoms[b], shoes[s]].filter((i): i is IdeaItem => i !== null);
+    return [tops[t], ...layers[l], bottoms[b], shoes[s]].filter((i): i is IdeaItem => i !== null);
   };
   const indexes = combos <= MAX_COMBINATIONS
     ? Array.from({ length: combos }, (_, n) => n)
@@ -117,7 +148,8 @@ export function suggestOutfits({ items, saved = [], mustInclude, seed = 1, limit
     const verdict = judgeColours(outfit.map((i) => i.colour));
     if (!verdict) continue;
     // A tiny random nudge only re-orders ideas that are equally good.
-    good.push({ itemIds: ids, reason: verdict.reason, score: verdict.score + rand() * 0.5 });
+    const rainBonus = preferOuter && outfit.some((i) => i.category === "outer_layer") ? 1 : 0;
+    good.push({ itemIds: ids, reason: verdict.reason, score: verdict.score + rainBonus + rand() * 0.5 });
   }
   good.sort((a, b) => b.score - a.score);
 

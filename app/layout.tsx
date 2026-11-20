@@ -5,6 +5,7 @@ import { getDictionary, getDirection } from "@/lib/i18n";
 import { getLocale } from "@/lib/i18n/server";
 import { I18nProvider } from "@/lib/i18n/I18nProvider";
 import { themeToCssVariables } from "@/lib/helpers/theme";
+import { RegisterServiceWorker } from "@/components/RegisterServiceWorker";
 import "./globals.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
@@ -21,6 +22,10 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: { default: "Dolab | دولاب", template: "%s · Dolab" },
     description: t.common.appDescription,
+    applicationName: "Dolab",
+    // iPhone/iPad "Add to Home Screen"
+    appleWebApp: { capable: true, title: "Dolab", statusBarStyle: "black-translucent" },
+    icons: { apple: "/icons/apple-touch-icon.png" },
   };
 }
 
@@ -43,6 +48,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <I18nProvider locale={locale} t={t}>
           {children}
         </I18nProvider>
+        <RegisterServiceWorker />
       </body>
     </html>
   );

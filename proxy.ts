@@ -7,6 +7,8 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // Skip static files and images — they don't need a login check.
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
+  // Skip static files, images and the installable-app files — they don't need a login check.
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|sw\\.js|offline\\.html|manifest\\.webmanifest|robots\\.txt|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+  ],
 };

@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0b0d10" />
+    <title>Offline · Dolab</title>
+    <style>
+      body {
+        margin: 0;
+        min-height: 100dvh;
+        display: grid;
+        place-items: center;
+        background: #0b0d10;
+        color: #eceef1;
+        font-family: system-ui, -apple-system, "Segoe UI", Tahoma, sans-serif;
+        text-align: center;
+        padding: 24px;
+        box-sizing: border-box;
+      }
+      main { max-width: 26rem; display: flex; flex-direction: column; gap: 12px; align-items: center; }
+      img { width: 64px; height: 64px; border-radius: 16px; }
+      h1 { font-size: 1.4rem; margin: 8px 0 0; }
+      p { color: #8f96a3; margin: 0; line-height: 1.5; }
+      hr { width: 60%; border: 0; border-top: 1px solid #2a2f39; margin: 12px 0; }
+      button {
+        margin-top: 16px; min-height: 44px; padding: 10px 22px; border: 0; border-radius: 12px;
+        background: #d6a46c; color: #1b1209; font: inherit; font-weight: 600; cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <img src="/icons/icon-192.png" alt="" />
+      <h1>You're offline</h1>
+      <p>Dolab needs the internet to open your wardrobe. Check your connection and try again.</p>
+      <hr />
+      <h1 lang="ar" dir="rtl">أنت غير متصل</h1>
+      <p lang="ar" dir="rtl">يحتاج دولاب إلى الإنترنت لفتح خزانتك. تحقق من اتصالك وحاول مرة أخرى.</p>
+      <button type="button" onclick="location.reload()">Try again · حاول مرة أخرى</button>
+    </main>
+  </body>
+</html>

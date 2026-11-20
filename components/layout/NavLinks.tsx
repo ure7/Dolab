@@ -35,6 +35,7 @@ export function NavLinks({ variant }: { variant: Variant }) {
             <Link
               href={href}
               aria-current={isActive ? "page" : undefined}
+              data-tour={`nav-${labelKey}`}
               className={`${linkClasses[variant]} transition ${
                 isActive ? "text-accent" : "text-muted hover:text-fg"
               } ${isActive && variant === "top" ? "bg-raised" : ""}`}

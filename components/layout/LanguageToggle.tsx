@@ -10,7 +10,7 @@ export async function LanguageToggle() {
   const nextLocale = locale === "en" ? "ar" : "en";
 
   return (
-    <form action={setLocale}>
+    <form action={setLocale} data-tour="language">
       <input type="hidden" name="locale" value={nextLocale} />
       <button
         type="submit"

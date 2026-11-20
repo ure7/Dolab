@@ -30,7 +30,18 @@ Everything runs on free tiers: no paid APIs, no API keys besides your own Supaba
 - "Need" and "Nice to have" lists, a budget, and suggestions from not-owned and
   worn-out items. Ticking off a linked item moves it into your wardrobe.
 
+**Daily use**
+- **Weather outfits:** pick your city once and get today's ideas with the right number
+  of layers (hoodie, jacket, rain) from [Open-Meteo](https://open-meteo.com) — free, no key.
+- **Wear tracker:** "Wore it today" on any outfit. The **Stats** page shows most-worn
+  items, cost per wear, the last two weeks and clothes you've forgotten about.
+- **Share an outfit** with a private, read-only link (`/s/…`) — anyone with the link can
+  view just that outfit; "Stop sharing" turns the link off. Prices stay private.
+
 **Everywhere**
+- **Installable app (PWA):** "Add to Home Screen" on phones or "Install" in the browser;
+  shows a friendly page when you're offline.
+- **Product tour** on your first visit (and from the **?** button in the header).
 - English and Arabic (full right-to-left layout), switchable at any time.
 - Responsive from small phones (360px) to big monitors (2560px).
 
@@ -110,7 +121,7 @@ before upload to stay well within it); Vercel's Hobby plan is free for personal 
 | --- | --- |
 | `app/` | Pages and routes. `(auth)` = public pages, `(app)` = logged-in pages |
 | `components/` | Shared UI (buttons, header, logo…) |
-| `features/` | Code for one feature each: `auth`, `wardrobe`, `fitting-room`, `outfits`, `shopping`, `profile` |
+| `features/` | Code for one feature each: `auth`, `wardrobe`, `fitting-room`, `outfits`, `shopping`, `profile`, `wear`, `weather` |
 | `lib/` | Supabase clients, database helpers, body maths, try-on, ideas, translations (`i18n`) |
 | `types/` | TypeScript types for database rows |
 | `config/dolab.config.ts` | **All colours, categories and settings** |
@@ -126,7 +137,7 @@ before upload to stay well within it); Vercel's Hobby plan is free for personal 
 | 4 | Saved outfits (codes like 1.2, variations, jacket open/closed) + outfit ideas + "Thinking of buying?" | ✅ |
 | 5 | Shopping list: Need / Nice to have, budget, suggestions, ticking off moves items into the wardrobe | ✅ |
 | 6 | Full Arabic/RTL pass, translated titles, 404 and error pages, loading states, README + deploy guide | ✅ |
-| 7 | Weather outfits, wear tracker, share links, installable app (PWA), product tour | |
+| 7 | Weather outfits, wear tracker, share links, installable app (PWA), product tour | ✅ |
 
 **Later — documented plans only:**
 - Browser extension: "Add to Dolab" from any shop website

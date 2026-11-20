@@ -1,5 +1,6 @@
 "use server";
 
+import { randomBytes } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { requireUserId } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
@@ -112,4 +113,38 @@ export async function deleteOutfit(id: string): Promise<OutfitResult | undefined
   const { error } = await supabase.from("outfits").delete().eq("id", id);
   if (error) return { status: "error", errorKey: "deleteFailed" };
   revalidatePath("/outfits");
+}
+
+// ---------------------------------------------------------------------------
+// Share links: an outfit is public (read-only) while it has a share_token.
+// ---------------------------------------------------------------------------
+
+export type ShareResult = { status: "ok"; token: string | null } | { status: "error" };
+
+/** Creates (or returns the existing) secret link code for an outfit. */
+export async function shareOutfit(id: string): Promise<ShareResult> {
+  await requireUserId();
+  if (!isUuid(id)) return { status: "error" };
+  const supabase = await createClient();
+  const { data: existing } = await supabase.from("outfits").select("share_token").eq("id", id).maybeSingle();
+  if (!existing) return { status: "error" };
+  if (existing.share_token) return { status: "ok", token: existing.share_token };
+
+  // 18 random bytes → 24 URL-safe characters: impossible to guess.
+  const token = randomBytes(18).toString("base64url");
+  const { error } = await supabase.from("outfits").update({ share_token: token }).eq("id", id);
+  if (error) return { status: "error" };
+  revalidatePath("/outfits");
+  return { status: "ok", token };
+}
+
+/** Removes the link: anyone who has it now sees "not shared anymore". */
+export async function stopSharing(id: string): Promise<ShareResult> {
+  await requireUserId();
+  if (!isUuid(id)) return { status: "error" };
+  const supabase = await createClient();
+  const { error } = await supabase.from("outfits").update({ share_token: null }).eq("id", id);
+  if (error) return { status: "error" };
+  revalidatePath("/outfits");
+  return { status: "ok", token: null };
 }
