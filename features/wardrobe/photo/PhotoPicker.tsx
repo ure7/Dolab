@@ -17,6 +17,8 @@ type Candidate = { blob: Blob; url: string };
 type PhotoPickerProps = {
   draft: PhotoDraft;
   onChange: (draft: PhotoDraft) => void;
+  /** Tells the form when a photo is still being prepared, so it can't be saved half-done. */
+  onBusyChange?: (busy: boolean) => void;
 };
 
 // A transparency-checkerboard, so you can see exactly what was cut away.
@@ -26,7 +28,7 @@ const checkerboard = "bg-[repeating-conic-gradient(#e9e6e1_0_25%,#f7f5f2_0_50%)]
 // Pick a photo, paste a screenshot, and optionally cut out the background.
 // After removal you compare before/after and choose. Nothing is uploaded
 // here — the form uploads when you press Save.
-export function PhotoPicker({ draft, onChange }: PhotoPickerProps) {
+export function PhotoPicker({ draft, onChange, onBusyChange }: PhotoPickerProps) {
   const { t } = useI18n();
   const fileInput = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState<Busy>(null);
@@ -35,6 +37,10 @@ export function PhotoPicker({ draft, onChange }: PhotoPickerProps) {
   // Each removal gets a number; "Cancel" bumps it so a late result is ignored.
   // (The library itself can't be stopped half-way, but nothing is shown or saved.)
   const run = useRef(0);
+
+  useEffect(() => {
+    onBusyChange?.(busy !== null);
+  }, [busy, onBusyChange]);
 
   const acceptImage = useCallback(
     async (image: Blob) => {
@@ -52,6 +58,16 @@ export function PhotoPicker({ draft, onChange }: PhotoPickerProps) {
     },
     [onChange],
   );
+
+  // A photo picked while the page was still starting up (slow phone) lands in
+  // the file input before React is listening — pick it up now instead of losing it.
+  useEffect(() => {
+    const input = fileInput.current;
+    const early = input?.files?.[0];
+    if (!input || !early) return;
+    input.value = "";
+    void acceptImage(early);
+  }, [acceptImage]);
 
   // Ctrl+V / long-press "Paste" of a screenshot anywhere on the form page.
   useEffect(() => {

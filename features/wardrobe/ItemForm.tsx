@@ -49,11 +49,14 @@ export function ItemForm({
   );
   const [error, setError] = useState<ItemErrorKey | null>(null);
   const [isSaving, startSaving] = useTransition();
+  // true while the photo is being resized or its background removed
+  const [photoBusy, setPhotoBusy] = useState(false);
 
   // We submit manually (instead of <form action>) so React doesn't reset the
   // fields when there's an error — nobody wants to retype everything.
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (photoBusy) return; // the photo isn't ready yet — saving now would lose it
     const formData = new FormData(event.currentTarget);
     setError(null);
 
@@ -96,7 +99,7 @@ export function ItemForm({
       {item && <input type="hidden" name="id" value={item.id} />}
 
       <div className="md:sticky md:top-24">
-        <PhotoPicker draft={photo} onChange={setPhoto} />
+        <PhotoPicker draft={photo} onChange={setPhoto} onBusyChange={setPhotoBusy} />
       </div>
 
       <div className="flex min-w-0 flex-col gap-6">
@@ -200,11 +203,11 @@ export function ItemForm({
         <div className="flex gap-3">
           <Button
             type="submit"
-            disabled={isSaving}
-            aria-busy={isSaving}
+            disabled={isSaving || photoBusy}
+            aria-busy={isSaving || photoBusy}
             className="min-w-28"
           >
-            {isSaving ? t.common.working : t.wardrobe.save}
+            {isSaving || photoBusy ? t.common.working : t.wardrobe.save}
           </Button>
           <Link href="/wardrobe" className={buttonClasses("ghost")}>
             {t.wardrobe.cancel}
