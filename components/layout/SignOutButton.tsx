@@ -8,9 +8,9 @@ export async function SignOutButton() {
 
   return (
     <form action={signOut}>
-      <button type="submit" className={buttonClasses("ghost", "px-3 py-2")} aria-label={t.common.signOut}>
+      <button type="submit" className={buttonClasses("ghost", "px-2.5 py-2 sm:px-3")} aria-label={t.common.signOut}>
         <LogoutIcon width={18} height={18} className="rtl:-scale-x-100" />
-        <span className="hidden sm:inline">{t.common.signOut}</span>
+        <span className="hidden lg:inline">{t.common.signOut}</span>
       </button>
     </form>
   );

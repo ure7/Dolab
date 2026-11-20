@@ -14,7 +14,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       {/* Keyboard users can jump past the navigation straight to the page. */}
       <a
         href="#content"
-        className="sr-only z-50 rounded-xl bg-accent px-4 py-2 font-medium text-on-accent focus:not-sr-only focus:fixed focus:start-4 focus:top-3"
+        className="sr-only start-0 top-0 z-50 rounded-xl bg-accent font-medium text-on-accent focus:not-sr-only focus:fixed focus:start-4 focus:top-3 focus:px-4 focus:py-2"
       >
         {t.common.skipToContent}
       </a>

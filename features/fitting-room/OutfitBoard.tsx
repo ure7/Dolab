@@ -1,6 +1,8 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { boardItemSizes, type CategoryId } from "@/config/dolab.config";
+import { measurePhoto, type PhotoMeasure } from "@/lib/try-on/measure";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { FittingRoomItem } from "./types";
 import { CutoutImage } from "./CutoutImage";
@@ -107,7 +109,8 @@ export function OutfitBoard({ items }: { items: FittingRoomItem[] }) {
       {boxes.map(({ item, x, y, w, h, z }) => (
         <figure
           key={item.id}
-          className="absolute m-0 flex items-center justify-center"
+          // A photo with a light, plain background blends into the board (see PhotoOnBoard).
+          className="absolute m-0 flex items-center justify-center has-[.blend-background]:mix-blend-multiply"
           style={{ left: `${(x / W) * 100}%`, top: `${(y / H) * 100}%`, width: `${(w / W) * 100}%`, height: `${(h / H) * 100}%`, zIndex: z }}
           title={item.name}
         >
@@ -131,11 +134,38 @@ function BoardPicture({ item }: { item: FittingRoomItem }) {
   if (item.cutoutUrl) {
     return <CutoutImage url={item.cutoutUrl} alt={item.name} className={`size-full ${shadow}`} />;
   }
-  if (item.photoUrl) {
-    // A photo with its background becomes a neat little print on the board.
-    return (
-      <img src={item.photoUrl} alt={item.name} className="max-h-full max-w-full rounded-md border-4 border-white object-contain shadow-lg" />
-    );
-  }
+  if (item.photoUrl) return <PhotoOnBoard url={item.photoUrl} alt={item.name} />;
   return <FlatGarment category={item.category} colour={item.colour} className={`size-full ${shadow}`} />;
+}
+
+// A photo that still has its background. On a plain background we zoom to the
+// garment (so it keeps its real size next to the other items), and a light
+// background melts into the board ("multiply"), so no white boxes show. Busy
+// backgrounds stay a neat little print.
+function PhotoOnBoard({ url, alt }: { url: string; alt: string }) {
+  const [measured, setMeasured] = useState<{ url: string; value: PhotoMeasure | null } | null>(null);
+  useEffect(() => {
+    let live = true;
+    measurePhoto(url).then((value) => live && setMeasured({ url, value }));
+    return () => {
+      live = false;
+    };
+  }, [url]);
+
+  const result = measured?.url === url ? measured.value : null;
+  if (!result) {
+    return <img src={url} alt={alt} loading="lazy" decoding="async" className="max-h-full max-w-full rounded-md border-4 border-white object-contain shadow-lg" />;
+  }
+  const { crop, lightBackground } = result;
+  return (
+    <svg
+      viewBox={`${crop.x} ${crop.y} ${crop.width} ${crop.height}`}
+      preserveAspectRatio="xMidYMid meet"
+      className={`size-full ${lightBackground ? "blend-background" : "rounded-md"}`}
+      role="img"
+      aria-label={alt}
+    >
+      <image href={url} width={crop.naturalWidth} height={crop.naturalHeight} />
+    </svg>
+  );
 }

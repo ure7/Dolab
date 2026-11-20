@@ -37,7 +37,7 @@ export function ProductTour() {
       stageRadius: 12,
       overlayOpacity: 0.65,
       steps: [
-        { popover: { title: t.tour.welcomeTitle, description: t.tour.welcomeBody } },
+        { popover: { title: t.tour.welcomeTitle, description: t.tour.welcomeBody, showButtons: ["next", "close"] } },
         step("nav-wardrobe", t.tour.wardrobeTitle, t.tour.wardrobeBody),
         step("nav-fittingRoom", t.tour.fittingRoomTitle, t.tour.fittingRoomBody),
         step("nav-outfits", t.tour.outfitsTitle, t.tour.outfitsBody),
@@ -66,7 +66,7 @@ export function ProductTour() {
   }, [pathname, start]);
 
   return (
-    <button type="button" onClick={start} aria-label={t.tour.startLabel} title={t.tour.startLabel} className={buttonClasses("ghost", "px-3 py-2")}>
+    <button type="button" onClick={start} aria-label={t.tour.startLabel} title={t.tour.startLabel} className={buttonClasses("ghost", "px-2.5 py-2 sm:px-3")}>
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
         <circle cx="12" cy="12" r="9" />
         <path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.4" />

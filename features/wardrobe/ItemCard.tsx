@@ -6,9 +6,9 @@ import { getColourHex } from "@/lib/helpers/config-guards";
 import { formatPrice } from "@/lib/helpers/format";
 import { ItemImage } from "./ItemImage";
 
-type ItemCardProps = { item: ItemWithPhotos; t: Dictionary; locale: Locale };
+type ItemCardProps = { item: ItemWithPhotos; t: Dictionary; locale: Locale; priority?: boolean };
 
-export function ItemCard({ item, t, locale }: ItemCardProps) {
+export function ItemCard({ item, t, locale, priority = false }: ItemCardProps) {
   const isStoreItem = item.status === "not_owned";
 
   return (
@@ -17,7 +17,7 @@ export function ItemCard({ item, t, locale }: ItemCardProps) {
       className="press group flex h-full flex-col overflow-hidden rounded-2xl border border-line bg-surface hover:-translate-y-0.5 hover:border-muted hover:shadow-xl hover:shadow-black/30 motion-reduce:hover:translate-y-0"
     >
       <div className="relative m-2 mb-0 aspect-square overflow-hidden rounded-xl bg-photo">
-        <ItemImage item={item} />
+        <ItemImage item={item} priority={priority} />
         <div className="absolute start-2 top-2 flex flex-col items-start gap-1">
           {isStoreItem && <Badge className="bg-accent text-on-accent">{t.wardrobe.notOwnedBadge}</Badge>}
           {item.condition === "worn_out" && <Badge className="bg-bg/85 text-danger">{t.wardrobe.wornOutBadge}</Badge>}

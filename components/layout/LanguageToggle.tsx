@@ -16,7 +16,7 @@ export async function LanguageToggle() {
         type="submit"
         lang={nextLocale}
         aria-label={t.common.switchLanguageLabel}
-        className={buttonClasses("secondary", "px-3 py-2")}
+        className={buttonClasses("secondary", "px-2.5 py-2 sm:px-3")}
       >
         {t.common.switchLanguage}
       </button>

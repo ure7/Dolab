@@ -10,12 +10,12 @@ export async function AppHeader() {
   const t = await getT();
   return (
     <header className="sticky top-0 z-20 border-b border-line bg-bg/85 backdrop-blur">
-      <div className="page-container flex h-16 items-center justify-between gap-3">
+      <div className="page-container flex h-16 items-center justify-between gap-2 sm:gap-3">
         <Logo />
         <nav aria-label={t.common.mainNav}>
           <NavLinks variant="top" />
         </nav>
-        <div className="flex items-center gap-1">
+        <div className="flex shrink-0 items-center gap-0.5 sm:gap-1">
           <ProductTour />
           <LanguageToggle />
           <SignOutButton />
