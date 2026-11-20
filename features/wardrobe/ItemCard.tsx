@@ -43,5 +43,5 @@ export function ItemCard({ item, t, locale, priority = false }: ItemCardProps) {
 }
 
 function Badge({ className, children }: { className: string; children: React.ReactNode }) {
-  return <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium shadow ${className}`}>{children}</span>;
+  return <span className={`rounded-full px-2 py-0.5 text-xs font-medium shadow ${className}`}>{children}</span>;
 }

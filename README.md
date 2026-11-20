@@ -101,6 +101,14 @@ and photos.
    - add `https://YOUR-LINK.vercel.app/auth/callback` under **Redirect URLs**.
 6. Open the link, sign up, and you're live. Every `git push` to `main` redeploys automatically.
 
+After deploying:
+- **Install it on a phone:** open the link in Safari (iPhone: Share → *Add to Home Screen*)
+  or Chrome/Brave (Android: menu → *Install app*).
+- **Family members** each sign up with their own email at the same link — everyone gets
+  their own private wardrobe.
+- **Sharing an outfit** gives a link like `https://YOUR-LINK.vercel.app/s/…` that works
+  without an account.
+
 Free-tier notes: Supabase gives 500 MB database + 1 GB photo storage (photos are shrunk
 before upload to stay well within it); Vercel's Hobby plan is free for personal use.
 

@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { cache } from "react";
 import Link from "next/link";
-import { storageConfig, type CategoryId, type ColourId, type ItemStatus } from "@/config/dolab.config";
+import { type CategoryId, type ColourId, type ItemStatus } from "@/config/dolab.config";
 import { getT } from "@/lib/i18n/server";
 import { format } from "@/lib/i18n/format";
 import { createClient } from "@/lib/supabase/server";
+import { signPhotoPaths } from "@/lib/db/photos";
 import { Logo } from "@/components/Logo";
 import { LanguageToggle } from "@/components/layout/LanguageToggle";
 import { buttonClasses } from "@/components/ui/Button";
@@ -40,11 +41,7 @@ const loadShared = cache(async (token: string): Promise<{ outfit: SharedOutfit; 
 
   // Short-lived links to just this outfit's photos.
   const paths = outfit.items.flatMap((i) => [i.photo_path, i.cutout_path]).filter((p): p is string => !!p);
-  const urls = new Map<string, string>();
-  if (paths.length) {
-    const { data: signed } = await supabase.storage.from(storageConfig.itemPhotosBucket).createSignedUrls(paths, storageConfig.signedUrlSeconds);
-    signed?.forEach((s) => s.path && s.signedUrl && urls.set(s.path, s.signedUrl));
-  }
+  const urls = paths.length ? await signPhotoPaths(supabase, paths) : new Map<string, string>();
   const items = outfit.items.map((i) => ({
     id: i.id,
     name: i.name,

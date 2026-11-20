@@ -162,7 +162,7 @@ export function FittingRoom({ body, items, initialSelection, hasProfile, initial
               {options.length === 0 ? (
                 <p className="text-xs text-muted">
                   {t.fittingRoom.noItemsInCategory}{" "}
-                  <Link href="/wardrobe/new" className="text-accent hover:underline">
+                  <Link href="/wardrobe/new" className="text-accent underline underline-offset-2">
                     {t.wardrobe.addItem}
                   </Link>
                 </p>

@@ -61,7 +61,7 @@ export function ProductTour() {
       seen = localStorage.getItem(SEEN_KEY) === "1";
     } catch {}
     if (seen) return;
-    const timer = setTimeout(start, 600); // let the page settle first
+    const timer = setTimeout(start, 1500); // let the page (and its photos) load first
     return () => clearTimeout(timer);
   }, [pathname, start]);
 

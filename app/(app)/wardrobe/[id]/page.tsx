@@ -26,13 +26,13 @@ export default async function EditItemPage({ params }: EditItemPageProps) {
   // RLS means someone else's item id also comes back empty → plain 404.
   if (!item) notFound();
 
-  // Is this "not owned yet" item already on the shopping list?
+  // Both questions at once: is it on the shopping list? how often was it worn?
   const supabase = await createClient();
-  const { count } = await supabase.from("shopping_items").select("id", { count: "exact", head: true }).eq("item_id", item.id);
+  const [{ count }, { data: wears }] = await Promise.all([
+    supabase.from("shopping_items").select("id", { count: "exact", head: true }).eq("item_id", item.id),
+    supabase.from("wear_logs").select("worn_on").eq("item_id", item.id).order("worn_on", { ascending: false }),
+  ]);
   const onShoppingList = (count ?? 0) > 0;
-
-  // How often has this been worn? (wear tracker)
-  const { data: wears } = await supabase.from("wear_logs").select("worn_on").eq("item_id", item.id).order("worn_on", { ascending: false });
   const timesWorn = wears?.length ?? 0;
 
   return (

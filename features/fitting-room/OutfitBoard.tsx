@@ -116,13 +116,19 @@ export function OutfitBoard({ items }: { items: FittingRoomItem[] }) {
         >
           <BoardPicture item={item} />
           {item.status === "not_owned" && (
-            <figcaption className="absolute bottom-0 left-1/2 -translate-x-1/2 rounded-full bg-[#1b1209]/90 px-2 py-0.5 text-[10px] font-medium whitespace-nowrap text-[#f3dcc0] shadow">
-              {t.wardrobe.notOwnedBadge}
-            </figcaption>
+            // The label is drawn with CSS (content: attr(...)) so it doesn't become part
+            // of a surrounding link's name; screen readers get it from the sr-only list below.
+            <figcaption
+              aria-hidden
+              data-label={t.wardrobe.notOwnedBadge}
+              className="absolute bottom-0 left-1/2 -translate-x-1/2 rounded-full bg-[#1b1209]/90 px-2 py-0.5 text-[0.65rem] font-medium whitespace-nowrap text-[#f3dcc0] shadow before:content-[attr(data-label)]"
+            />
           )}
         </figure>
       ))}
-      <span className="sr-only">{items.map((i) => i.name).join(", ")}</span>
+      <span className="sr-only">
+        {items.map((i) => (i.status === "not_owned" ? `${i.name} (${t.wardrobe.notOwnedBadge})` : i.name)).join(", ")}
+      </span>
     </div>
   );
 }

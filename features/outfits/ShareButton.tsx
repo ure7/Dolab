@@ -64,7 +64,7 @@ export function ShareButton({ outfitId, title, initialToken }: { outfitId: strin
           </Button>
         )}
       </div>
-      {token && <p className="text-[0.7rem] text-success">{t.share.sharing}</p>}
+      {token && <p className="text-xs text-success">{t.share.sharing}</p>}
       {message && (
         <p className="text-xs break-all text-muted" role="status">
           {message}

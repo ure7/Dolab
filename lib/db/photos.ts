@@ -4,18 +4,42 @@ import type { Item, ItemWithPhotos } from "@/types/database";
 
 // The photo bucket is private, so photos can't be shown with a plain URL.
 // Instead we ask Supabase for short-lived "signed" links — all in one request.
-export async function attachPhotoUrls(supabase: SupabaseClient, items: Item[]): Promise<ItemWithPhotos[]> {
-  const paths = items.flatMap((item) => [item.photo_path, item.cutout_path]).filter((p): p is string => !!p);
+//
+// Speed: a new signed link is a NEW web address, so the browser would download
+// every photo again on every page. We therefore reuse a link while it still has
+// plenty of time left, and the browser can serve the photo from its cache.
+// (Only paths that came from rows this user may read are ever looked up.)
+const REUSE_UNTIL_MS = 15 * 60 * 1000; // get a fresh link when < 15 min remain
+const MAX_CACHED = 5000;
+const signedCache = new Map<string, { url: string; expiresAt: number }>();
 
+export async function signPhotoPaths(supabase: SupabaseClient, paths: string[]): Promise<Map<string, string>> {
+  const now = Date.now();
   const urlByPath = new Map<string, string>();
-  if (paths.length > 0) {
+  const missing: string[] = [];
+  for (const path of new Set(paths)) {
+    const hit = signedCache.get(path);
+    if (hit && hit.expiresAt - now > REUSE_UNTIL_MS) urlByPath.set(path, hit.url);
+    else missing.push(path);
+  }
+  if (missing.length > 0) {
     const { data } = await supabase.storage
       .from(storageConfig.itemPhotosBucket)
-      .createSignedUrls(paths, storageConfig.signedUrlSeconds);
+      .createSignedUrls(missing, storageConfig.signedUrlSeconds);
+    if (signedCache.size > MAX_CACHED) signedCache.clear(); // keep memory bounded
+    const expiresAt = now + storageConfig.signedUrlSeconds * 1000;
     data?.forEach((entry) => {
-      if (entry.path && entry.signedUrl) urlByPath.set(entry.path, entry.signedUrl);
+      if (!entry.path || !entry.signedUrl) return;
+      urlByPath.set(entry.path, entry.signedUrl);
+      signedCache.set(entry.path, { url: entry.signedUrl, expiresAt });
     });
   }
+  return urlByPath;
+}
+
+export async function attachPhotoUrls(supabase: SupabaseClient, items: Item[]): Promise<ItemWithPhotos[]> {
+  const paths = items.flatMap((item) => [item.photo_path, item.cutout_path]).filter((p): p is string => !!p);
+  const urlByPath = paths.length > 0 ? await signPhotoPaths(supabase, paths) : new Map<string, string>();
 
   return items.map((item) => ({
     ...item,

@@ -32,15 +32,15 @@ const grid = "grid grid-cols-2 gap-[clamp(0.75rem,1.2vw,1.25rem)] md:grid-cols-3
 export const generateMetadata = pageTitle((t) => t.nav.outfits);
 
 export default async function OutfitsPage({ searchParams }: OutfitsPageProps) {
-  const [t, locale, wardrobe, outfits, recentWears, { seed }] = await Promise.all([
+  const [t, locale, wardrobe, outfits, recentWears, profile, { seed }] = await Promise.all([
     getT(),
     getLocale(),
     listItems(),
     listOutfits(),
     listWearLogs(2),
+    getProfile(),
     searchParams,
   ]);
-  const profile = await getProfile();
   const hasPlace = profile?.latitude != null && profile?.longitude != null;
   const weather = hasPlace ? await getWeather(Number(profile!.latitude), Number(profile!.longitude)) : null;
   const advice = weather ? adviceFor(weather) : null;
